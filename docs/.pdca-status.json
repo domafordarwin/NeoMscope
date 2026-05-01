@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-01T13:18:46.003Z",
+  "lastUpdated": "2026-05-01T14:07:58.760Z",
   "activeFeatures": [
     "aihat-yolo-port",
     "deploy_detect_onioncell",
@@ -9,7 +9,8 @@
     "training",
     "tests",
     "unit",
-    "integration"
+    "integration",
+    "runs"
   ],
   "primaryFeature": "aihat-yolo-port",
   "features": {
@@ -133,6 +134,19 @@
         "lastUpdated": "2026-05-01T02:56:39.011Z"
       },
       "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\integration\\__init__.py"
+    },
+    "runs": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T14:07:58.759Z",
+        "lastUpdated": "2026-05-01T14:07:58.760Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\runs\\_summarize_5sample.py"
     }
   },
   "pipeline": {
@@ -149,7 +163,7 @@
   "session": {
     "startedAt": "2026-05-01T00:53:09.150Z",
     "onboardingCompleted": true,
-    "lastActivity": "2026-05-01T13:18:46.003Z"
+    "lastActivity": "2026-05-01T14:07:58.760Z"
   },
   "history": [
     {
@@ -601,6 +615,12 @@
     {
       "timestamp": "2026-05-01T13:18:46.003Z",
       "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T14:07:58.760Z",
+      "feature": "runs",
       "phase": "do",
       "action": "updated"
     }

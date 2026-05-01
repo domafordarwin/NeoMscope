@@ -150,7 +150,7 @@ hr {
 <div class="container">
 <div class="report-meta">
     <div><span class="label">Source:</span><code>2026-05-01-progress-report.md</code></div>
-    <div><span class="label">Generated:</span>2026-05-01 21:53</div>
+    <div><span class="label">Generated:</span>2026-05-01 23:15</div>
     <div><span class="label">Tool:</span>tools/build_report_html.py</div>
 </div>
 <h1 id="neomscope-v20"><a class="toclink" href="#neomscope-v20">NeoMscope v2.0 마이그레이션 — 작업 보고서</a></h1>
@@ -648,6 +648,100 @@ PDCA 문서:       Plan v0.5, Design v0.2, Analysis (이 보고서)
 <h2 id="12"><a class="toclink" href="#12">12. 결론</a></h2>
 <p>v2.0 마이그레이션의 <strong>인프라·도구·코드는 ~95% 완료</strong>. 핵심 블로커는 학습 데이터 라벨 품질 — 두 차례 시도 후 3차 필터링으로 시각적 만족도 도달. 이 보고서 작성 시점에 사용자 검토 대기 중이며, 만족 시 5장 → 105장 처리로 진행 후 학습·배포 단계로 넘어갈 예정.</p>
 <p>전체 일정 추정 (라벨링 부터 시연까지): <strong>2-3일</strong> (옵션 C 메리스템 추출 + 학습 + 배포 기준).</p>
+<hr>
+<h2 id="13-apex-roi-5-sample"><a class="toclink" href="#13-apex-roi-5-sample">13. 세션 후반 추가 (Apex ROI 도입 + 5-sample 검증)</a></h2>
+<p>이 보고서를 처음 작성한 후, 사용자 제안으로 <strong>메리스템 ROI만 잘라서 검출</strong>하는 4차 시도를 진행했다.</p>
+<h3 id="131-apex-roi"><a class="toclink" href="#131-apex-roi">13.1 Apex ROI 추출 도구 신규</a></h3>
+<p><a href="../../tools/extract_apex_rois.py">tools/extract_apex_rois.py</a> (commit <code>613583f</code>):<br>
+- 조직 마스크 → 연결 컴포넌트별 root tip → 위쪽 fraction만 잘라 native-res JPG로 저장<br>
+- 처리: ~6초/이미지, 105장 추정 ~10분</p>
+<h3 id="132-top_fraction-035-015"><a class="toclink" href="#132-top_fraction-035-015">13.2 top_fraction 튜닝 (0.35 → 0.15)</a></h3>
+<p>첫 시도 0.35는 메리스템 + elongation zone을 함께 포함 → elongation 세포가 Anaphase로 잘못 분류되는 패턴 발견 (apex1 확대 검수에서 길쭉한 직사각형 세포가 모두 &ldquo;Ana&rdquo;로 라벨됨). top_fraction을 0.15로 줄여 둥근 메리스템 캡만 정확히 캡처.</p>
+<h3 id="133-5-sample-commit-19223ac"><a class="toclink" href="#133-5-sample-commit-19223ac">13.3 5-sample 검증 결과 (commit <code>19223ac</code>)</a></h3>
+<p>v2 (top_fraction=0.15)로 5장 처리:</p>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th style="text-align: right;">v0 (full)</th>
+<th style="text-align: right;">v1 (apex 35%)</th>
+<th style="text-align: right;"><strong>v2 (apex 15%)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1장 평균 detection</td>
+<td style="text-align: right;">240</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;"><strong>108</strong></td>
+</tr>
+<tr>
+<td>Pro (전기) 비율</td>
+<td style="text-align: right;">12%</td>
+<td style="text-align: right;">21%</td>
+<td style="text-align: right;"><strong>36%</strong> ⭐</td>
+</tr>
+<tr>
+<td>Ana (후기) 비율</td>
+<td style="text-align: right;">25%</td>
+<td style="text-align: right;">54%</td>
+<td style="text-align: right;"><strong>32%</strong></td>
+</tr>
+<tr>
+<td>Telo (말기) 비율</td>
+<td style="text-align: right;">55%</td>
+<td style="text-align: right;">11%</td>
+<td style="text-align: right;"><strong>12%</strong></td>
+</tr>
+<tr>
+<td>Inter (간기) 비율</td>
+<td style="text-align: right;">2%</td>
+<td style="text-align: right;">3%</td>
+<td style="text-align: right;"><strong>3%</strong></td>
+</tr>
+<tr>
+<td>처리 시간/장</td>
+<td style="text-align: right;">20분</td>
+<td style="text-align: right;">10분</td>
+<td style="text-align: right;"><strong>5분</strong></td>
+</tr>
+<tr>
+<td>105장 추정</td>
+<td style="text-align: right;">35h</td>
+<td style="text-align: right;">17h</td>
+<td style="text-align: right;"><strong>9h</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>v2가 가장 균형잡힌 분포 + 가장 빠름 + 생물학적으로 타당</strong> (메리스템에서 Pro/Meta/Ana가 자주 보이는 게 정상).</p>
+<h3 id="134-5-sample"><a class="toclink" href="#134-5-sample">13.4 5-sample 통계</a></h3>
+<ul>
+<li>입력: 5 raws → <strong>11 ROIs</strong> (이미지당 2.2개)</li>
+<li>출력: <strong>538 detections</strong> (평균 49/ROI, 108/원본 이미지)</li>
+<li>신뢰도: 0.74 - 0.80 (일관)</li>
+<li>가장 좋은 케이스: 0067 apex1 → 137 detections, 메리스템 격자 cell 위에 정확히 박스</li>
+<li>빈 ROI: 0068의 apex2 (작은 fragment 1768×191) → 0 detections (정상, 자동 필터링)</li>
+</ul>
+<h3 id="135"><a class="toclink" href="#135">13.5 결정 대기 (오늘 미진행)</a></h3>
+<ul>
+<li>105장 전체 처리 (~9-10시간 백그라운드, 밤사이 진행)</li>
+<li>5장 결과만으로 학습 시도 (작은 데이터셋)</li>
+<li>추가 튜닝 (top_fraction 더 작게 / conf 상향)</li>
+</ul>
+<h3 id="136"><a class="toclink" href="#136">13.6 추가 산출물</a></h3>
+<ul>
+<li><a href="../../tools/extract_apex_rois.py">tools/extract_apex_rois.py</a> — apex ROI 추출</li>
+<li><a href="../../tools/build_report_html.py">tools/build_report_html.py</a> — Markdown → HTML (이 보고서)</li>
+<li><a href="../../tools/build_science_fair_html.py">tools/build_science_fair_html.py</a> — 전람회용 HTML 빌더</li>
+<li><a href="2026-05-01-science-fair-report.md">docs/03-analysis/2026-05-01-science-fair-report.md</a> — 과학전람회 출품용 보고서 (407줄)</li>
+<li><a href="2026-05-01-science-fair-report.html">docs/03-analysis/2026-05-01-science-fair-report.html</a> — 위 보고서 HTML 변환</li>
+</ul>
+<h3 id="137-register"><a class="toclink" href="#137-register">13.7 갱신된 위험 register</a></h3>
+<ul>
+<li>R-15 (스케일 불일치) → ✅ 해소 (apex ROI로 native-res 처리)</li>
+<li>R-16 (35시간) → ✅ 해소 (apex ROI로 9시간으로 단축)</li>
+<li><strong>R-17 (신규)</strong> — top_fraction 자동 튜닝 부재. 현재는 모든 이미지에 0.15 일괄 적용. 일부 이미지의 메리스템 크기가 다를 수 있음. 일단은 일괄 적용으로 진행, 결과 검수에서 필요시 이미지별 조정.</li>
+</ul>
 </div>
 </body>
 </html>

@@ -280,3 +280,57 @@ PDCA 문서:       Plan v0.5, Design v0.2, Analysis (이 보고서)
 v2.0 마이그레이션의 **인프라·도구·코드는 ~95% 완료**. 핵심 블로커는 학습 데이터 라벨 품질 — 두 차례 시도 후 3차 필터링으로 시각적 만족도 도달. 이 보고서 작성 시점에 사용자 검토 대기 중이며, 만족 시 5장 → 105장 처리로 진행 후 학습·배포 단계로 넘어갈 예정.
 
 전체 일정 추정 (라벨링 부터 시연까지): **2-3일** (옵션 C 메리스템 추출 + 학습 + 배포 기준).
+
+---
+
+## 13. 세션 후반 추가 (Apex ROI 도입 + 5-sample 검증)
+
+이 보고서를 처음 작성한 후, 사용자 제안으로 **메리스템 ROI만 잘라서 검출**하는 4차 시도를 진행했다.
+
+### 13.1 Apex ROI 추출 도구 신규
+[tools/extract_apex_rois.py](../../tools/extract_apex_rois.py) (commit `613583f`):
+- 조직 마스크 → 연결 컴포넌트별 root tip → 위쪽 fraction만 잘라 native-res JPG로 저장
+- 처리: ~6초/이미지, 105장 추정 ~10분
+
+### 13.2 top_fraction 튜닝 (0.35 → 0.15)
+첫 시도 0.35는 메리스템 + elongation zone을 함께 포함 → elongation 세포가 Anaphase로 잘못 분류되는 패턴 발견 (apex1 확대 검수에서 길쭉한 직사각형 세포가 모두 "Ana"로 라벨됨). top_fraction을 0.15로 줄여 둥근 메리스템 캡만 정확히 캡처.
+
+### 13.3 5-sample 검증 결과 (commit `19223ac`)
+v2 (top_fraction=0.15)로 5장 처리:
+
+| 항목 | v0 (full) | v1 (apex 35%) | **v2 (apex 15%)** |
+|---|---:|---:|---:|
+| 1장 평균 detection | 240 | 159 | **108** |
+| Pro (전기) 비율 | 12% | 21% | **36%** ⭐ |
+| Ana (후기) 비율 | 25% | 54% | **32%** |
+| Telo (말기) 비율 | 55% | 11% | **12%** |
+| Inter (간기) 비율 | 2% | 3% | **3%** |
+| 처리 시간/장 | 20분 | 10분 | **5분** |
+| 105장 추정 | 35h | 17h | **9h** |
+
+**v2가 가장 균형잡힌 분포 + 가장 빠름 + 생물학적으로 타당** (메리스템에서 Pro/Meta/Ana가 자주 보이는 게 정상).
+
+### 13.4 5-sample 통계
+- 입력: 5 raws → **11 ROIs** (이미지당 2.2개)
+- 출력: **538 detections** (평균 49/ROI, 108/원본 이미지)
+- 신뢰도: 0.74 - 0.80 (일관)
+- 가장 좋은 케이스: 0067 apex1 → 137 detections, 메리스템 격자 cell 위에 정확히 박스
+- 빈 ROI: 0068의 apex2 (작은 fragment 1768×191) → 0 detections (정상, 자동 필터링)
+
+### 13.5 결정 대기 (오늘 미진행)
+- 105장 전체 처리 (~9-10시간 백그라운드, 밤사이 진행)
+- 5장 결과만으로 학습 시도 (작은 데이터셋)
+- 추가 튜닝 (top_fraction 더 작게 / conf 상향)
+
+### 13.6 추가 산출물
+- [tools/extract_apex_rois.py](../../tools/extract_apex_rois.py) — apex ROI 추출
+- [tools/build_report_html.py](../../tools/build_report_html.py) — Markdown → HTML (이 보고서)
+- [tools/build_science_fair_html.py](../../tools/build_science_fair_html.py) — 전람회용 HTML 빌더
+- [docs/03-analysis/2026-05-01-science-fair-report.md](2026-05-01-science-fair-report.md) — 과학전람회 출품용 보고서 (407줄)
+- [docs/03-analysis/2026-05-01-science-fair-report.html](2026-05-01-science-fair-report.html) — 위 보고서 HTML 변환
+
+### 13.7 갱신된 위험 register
+- R-15 (스케일 불일치) → ✅ 해소 (apex ROI로 native-res 처리)
+- R-16 (35시간) → ✅ 해소 (apex ROI로 9시간으로 단축)
+- **R-17 (신규)** — top_fraction 자동 튜닝 부재. 현재는 모든 이미지에 0.15 일괄 적용. 일부 이미지의 메리스템 크기가 다를 수 있음. 일단은 일괄 적용으로 진행, 결과 검수에서 필요시 이미지별 조정.
+
