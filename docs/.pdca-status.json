@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-01T12:26:09.290Z",
+  "lastUpdated": "2026-05-01T12:57:55.895Z",
   "activeFeatures": [
     "aihat-yolo-port",
     "deploy_detect_onioncell",
@@ -78,9 +78,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:56:33.570Z",
-        "lastUpdated": "2026-05-01T12:26:09.290Z"
+        "lastUpdated": "2026-05-01T12:57:55.895Z"
       },
-      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\tile_and_detect.py"
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\extract_apex_rois.py"
     },
     "training": {
       "phase": "do",
@@ -149,7 +149,7 @@
   "session": {
     "startedAt": "2026-05-01T00:53:09.150Z",
     "onboardingCompleted": true,
-    "lastActivity": "2026-05-01T12:26:09.290Z"
+    "lastActivity": "2026-05-01T12:57:55.895Z"
   },
   "history": [
     {
@@ -564,6 +564,36 @@
     },
     {
       "timestamp": "2026-05-01T12:26:09.290Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T12:56:49.261Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T12:57:09.839Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T12:57:12.455Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T12:57:32.831Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T12:57:55.895Z",
       "feature": "tools",
       "phase": "do",
       "action": "updated"
