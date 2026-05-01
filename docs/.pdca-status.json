@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-01T03:02:51.452Z",
+  "lastUpdated": "2026-05-01T03:08:49.952Z",
   "activeFeatures": [
     "aihat-yolo-port",
     "deploy_detect_onioncell",
@@ -65,9 +65,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:56:32.170Z",
-        "lastUpdated": "2026-05-01T03:02:51.451Z"
+        "lastUpdated": "2026-05-01T03:08:49.952Z"
       },
-      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\inference\\types.py"
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\inference\\postprocess.py"
     },
     "tools": {
       "phase": "do",
@@ -78,9 +78,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:56:33.570Z",
-        "lastUpdated": "2026-05-01T03:02:44.202Z"
+        "lastUpdated": "2026-05-01T03:04:44.678Z"
       },
-      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\visualize_labels.py"
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\compile_hef.sh"
     },
     "training": {
       "phase": "do",
@@ -117,9 +117,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:56:37.654Z",
-        "lastUpdated": "2026-05-01T03:01:14.872Z"
+        "lastUpdated": "2026-05-01T03:08:17.285Z"
       },
-      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\unit\\test_types.py"
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\unit\\test_pipeline_mock.py"
     },
     "integration": {
       "phase": "do",
@@ -149,7 +149,7 @@
   "session": {
     "startedAt": "2026-05-01T00:53:09.150Z",
     "onboardingCompleted": true,
-    "lastActivity": "2026-05-01T03:02:51.452Z"
+    "lastActivity": "2026-05-01T03:08:49.952Z"
   },
   "history": [
     {
@@ -312,6 +312,114 @@
     },
     {
       "timestamp": "2026-05-01T03:02:51.451Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:04:26.264Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:04:44.678Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:06:00.127Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:06:27.082Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:06:46.621Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:07:20.701Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:07:37.239Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:07:51.079Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:06.249Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:17.285Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:36.494Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:38.934Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:41.606Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:43.473Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:45.358Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:46.835Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:48.231Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T03:08:49.952Z",
       "feature": "inference",
       "phase": "do",
       "action": "updated"
