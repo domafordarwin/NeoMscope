@@ -133,6 +133,18 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="Optional bootstrap-report.json — render only review_files",
     )
+    parser.add_argument(
+        "--max-size",
+        type=int,
+        default=1280,
+        help="Resize so longest edge <= this (default 1280, 0 = no resize)",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["jpg", "png"],
+        default="jpg",
+        help="Output format (default jpg, much smaller)",
+    )
     parser.add_argument("--log-level", default="INFO")
     args = parser.parse_args(argv)
 
@@ -162,8 +174,22 @@ def main(argv: list[str] | None = None) -> int:
         labels = _read_labels(args.labels / f"{stem}.txt")
         annotated = _draw(bgr, labels)
 
-        out_path = args.output / f"{stem}.png"
-        cv2.imwrite(str(out_path), annotated)
+        if args.max_size > 0:
+            h, w = annotated.shape[:2]
+            longest = max(h, w)
+            if longest > args.max_size:
+                scale = args.max_size / longest
+                annotated = cv2.resize(
+                    annotated,
+                    (int(w * scale), int(h * scale)),
+                    interpolation=cv2.INTER_AREA,
+                )
+
+        out_path = args.output / f"{stem}.{args.format}"
+        if args.format == "jpg":
+            cv2.imwrite(str(out_path), annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        else:
+            cv2.imwrite(str(out_path), annotated)
         rendered += 1
 
     logger.info("Rendered %d images to %s (skipped %d)", rendered, args.output, skipped)
