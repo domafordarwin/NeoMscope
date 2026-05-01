@@ -38,7 +38,7 @@ version: 1.0
 - **전람회 요건**: 휴대성·시연 안정성·"최신 기술 채택" 어필이 필요.
 - **하드웨어 채택 근거 (AI HAT+ 2 / Hailo-10H, 2026-01-15 출시)**: 2세대 Hailo 신경 코어 + 8GB on-module LPDDR4X. 비전 성능은 Hailo-8(26 TOPS) 대비 동등하지만, on-module 메모리 덕에 더 큰 모델(YOLO `m`/`l`)을 여유롭게 구동 가능. 전력 3.5–4.5W로 저발열·저소음.
 - **YOLOv11-det 채택 근거**: (1) 2024-09 출시 안정 버전, Hailo Model Zoo·Pi 5 사례 최다. (2) **설계 단계에서 발견 — 기존 모델은 polygon 마스크가 아닌 bbox 사각형으로 학습됨** ([dataset_config.py:88-94](../../../dataset_config.py#L88-L94)). 즉 현 모델 출력 = 본질적으로 bbox 검출. det로 가도 기능 동등하며, 학습·추론 모두 단순화. **백업: YOLOv8-det**.
-- **데이터 확보 전략 — 부트스트랩 라벨링**: 원본 어노테이션(COCO JSON)이 없으나 **원본 이미지 105장**([raws/JPEG_Export_Data/](../../../raws/JPEG_Export_Data/))과 **기존 가중치**(`weights/mask_rcnn_onioncell_1020_0089.h5`)는 보유. 기존 모델로 자동 추론 → bbox 출력 → 수작업 보정 → YOLO det 라벨 생성. 0.5–1일 소요 예상.
+- **데이터 확보 전략 — 수동 per-cell 라벨링** (v0.5 갱신): 원본 raws/JPEG_Export_Data 105장은 whole-mount root section이라 개별 분열 세포가 보이지 않음. 진짜 mitosis squash slide 데이터는 **`captured_raw_images/` 22장** (600×450, 이미지당 50-150 visible cells). Roboflow Smart Polygon (SAM 보조)로 SAM이 세포 경계 자동 추정 → 사용자가 5-class 분류만 결정. 예상 라벨링 시간 2-4시간 (이미지당 ~10분, 100+ cells/image). ❌ 부트스트랩 v1은 폐기 (잘못된 스케일).
 - **학습 환경 — Kaggle**: 현 PC(Quadro P2000 4GB VRAM)는 학습 부적합. Kaggle T4/P100 16GB VRAM(주 30시간 무료) 사용. 현 PC는 코드 개발·ONNX export·WSL2 기반 HEF 컴파일·시연 준비용.
 - **Hailo DFC 환경**: Hailo Dataflow Compiler는 Linux 전용 → Windows 11 기반 학습 PC에 **WSL2 + Ubuntu**로 별도 환경 구성 필요.
 
@@ -61,11 +61,12 @@ version: 1.0
 
 ### 2.1 In Scope
 
-- [ ] **부트스트랩 라벨링**: [raws/JPEG_Export_Data/](../../../raws/JPEG_Export_Data/) 105장 + [captured_raw_images/](../../../captured_raw_images/) 22장에 기존 Mask R-CNN 모델로 자동 추론 → YOLO det `.txt` 생성
-- [ ] Roboflow/CVAT에서 자동 라벨 시각 검수·수작업 보정
+- [ ] ~~부트스트랩 라벨링~~ ❌ **v0.5에서 폐기** (raws 데이터셋이 부적합).
+- [ ] **수동 per-cell 라벨링**: [captured_raw_images/](../../../captured_raw_images/) 22장에 Roboflow Smart Polygon (SAM 보조)로 each cell → bbox + 5-class 분류
+- [ ] Roboflow Augmentation 강화 (회전 360°, flip, crop, color jitter) — 22장 → 효과적 200-500장
 - [ ] 데이터셋 무결성 검증(클래스 분포, 좌표 범위, bbox 유효성) 도구
 - [ ] YOLOv11-det Kaggle 학습 노트북 (`training/notebooks/train-yolo11-det-kaggle.ipynb`)
-- [ ] WSL2 + Ubuntu 22.04 + Hailo DFC 4.x+ 환경 구성 (Windows 11 학습 PC)
+- [x] WSL2 + Ubuntu 22.04 + Hailo DFC v5.3.0 환경 구성 ✅ 완료 (commit `690ba15`)
 - [ ] PyTorch → ONNX → Hailo `.hef` 컴파일 파이프라인
 - [ ] Pi 5 + AI HAT+ 실시간 추론 스크립트 (live_detect 대체)
 - [ ] Pi 5 배치 추론 스크립트 (detect_onioncell 대체)
@@ -398,3 +399,4 @@ bkit 9-phase Development Pipeline 매핑:
 | 0.2 | 2026-05-01 | 하드웨어 확정: AI HAT+ 2 / Hailo-10H. Model Zoo master 브랜치 + DFC 4.x로 도구체인 갱신. R-04 해소, R-09/R-10 추가. 모델 사이즈 `s` 기본/`m` 업그레이드 가능. | domafordarwin / Claude |
 | 0.3 | 2026-05-01 | **모델 선택 변경: YOLO26-seg → YOLOv11-seg** (안정성 우선). 백업 YOLOv11→YOLOv8. R-01 해소, R-09 위험도 ↓. | domafordarwin / Claude |
 | 0.4 | 2026-05-01 | **3대 변경**: ① 설계 단계 발견(bbox-as-mask)로 **seg→det** 확정. ② 학습 PC GPU(P2000 4GB) 부족 확인 → **Kaggle 학습**. ③ 어노테이션 부재 확인 → **부트스트랩 라벨링**. R-11~14 추가, FR-12/13 추가, Phase 1↔2 통합으로 단계 6→5. | domafordarwin / Claude |
+| 0.5 | 2026-05-01 | **데이터셋 근본 재정의**: Roboflow 검수 중 raws/JPEG_Export_Data(105장, 8000×31000)는 whole-mount root section으로 mitosis 관찰엔 부적합 발견. 실제 squash slide는 **captured_raw_images의 22장** (600×450, 이미지당 50-150 visible cells). 부트스트랩 라벨(399 detections)도 잘못된 스케일이라 폐기. **새 전략**: 22장 + 강한 augmentation + Roboflow Smart Polygon (SAM 보조) 수동 per-cell 라벨링. | domafordarwin / Claude |
