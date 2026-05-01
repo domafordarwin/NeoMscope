@@ -50,6 +50,8 @@ Thumbs.db
 # Claude Code local overrides (keep .claude/settings.json shared)
 .claude/settings.local.json
 .claude/.credentials*
+.claude/scheduled_tasks.lock
+.claude/scheduled_tasks.json
 
 # Logs
 *.log
