@@ -1,0 +1,93 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neomscope"
+version = "1.0.0"
+description = "Onion cell division detector for science fair — YOLOv11 + Raspberry Pi 5 + AI HAT+ 2 (Hailo-10H)"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+authors = [{ name = "domafordarwin" }]
+license = { text = "MIT" }
+keywords = ["computer-vision", "yolo", "raspberry-pi", "hailo", "edge-ai", "biology"]
+
+dependencies = [
+    "numpy>=1.26,<2.0",
+    "opencv-python>=4.9",
+    "Pillow>=10.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4",
+    "black>=24.0",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+# Used on dev PC (ONNX export, validation tools)
+tools = [
+    "ultralytics>=8.3",
+    "onnx>=1.17",
+    "onnxruntime>=1.18",
+    "matplotlib>=3.8",
+    "scikit-learn>=1.5",
+]
+
+# Used on Raspberry Pi 5 only — installed by setup.sh
+# (hailo-platform comes from Hailo APT repo, not PyPI; do NOT install via pip)
+inference = [
+    # Core inference deps. hailo-platform is system-installed.
+]
+
+[project.scripts]
+neomscope-bootstrap = "tools.bootstrap_labeling:main"
+neomscope-validate = "tools.validate_dataset:main"
+neomscope-export = "tools.export_onnx:main"
+neomscope-live = "inference.live_detect:main"
+neomscope-batch = "inference.batch_detect:main"
+neomscope-capture = "inference.capture_and_detect:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["inference", "tools", "training"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["legacy/", "models/", "datasets/", "captured_raw_images/", "raws/"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["inference", "tools", "training"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+extend-exclude = '''/(legacy|models|datasets|captured_raw_images|raws)/'''
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra -q --strict-markers --strict-config"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "pi: marks tests that require Raspberry Pi hardware (skip on dev machine)",
+    "hailo: marks tests that require Hailo NPU",
+]

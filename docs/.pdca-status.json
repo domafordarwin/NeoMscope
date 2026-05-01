@@ -1,18 +1,242 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-01T00:53:09.150Z",
-  "activeFeatures": [],
-  "primaryFeature": null,
-  "features": {},
+  "lastUpdated": "2026-05-01T02:57:00.783Z",
+  "activeFeatures": [
+    "aihat-yolo-port",
+    "deploy_detect_onioncell",
+    "inference",
+    "tools",
+    "training",
+    "tests",
+    "unit",
+    "integration"
+  ],
+  "primaryFeature": "aihat-yolo-port",
+  "features": {
+    "aihat-yolo-port": {
+      "phase": "design",
+      "matchRate": null,
+      "iterationCount": 0,
+      "startedAt": "2026-05-01T01:30:00.000Z",
+      "lastActivity": "2026-05-01T02:00:00.000Z",
+      "documents": {
+        "plan": "docs/01-plan/features/aihat-yolo-port.plan.md",
+        "design": "docs/02-design/features/aihat-yolo-port.design.md",
+        "analysis": null,
+        "report": null
+      },
+      "decisions": {
+        "model": "YOLOv11-det",
+        "backupModel": "YOLOv8-det",
+        "modelSize": "YOLOv11s (1차), YOLOv11m (mAP 부족시 업그레이드)",
+        "hardware": "Raspberry Pi 5 + AI HAT+ 2 (Hailo-10H, 40 TOPS INT4 / 20 TOPS INT8, 8GB LPDDR4X)",
+        "hailoToolchain": "Model Zoo master branch + Hailo Dataflow Compiler 4.x+ (WSL2 Ubuntu)",
+        "trainingEnv": "Kaggle (T4/P100 16GB VRAM, 30h/week free)",
+        "developmentPC": "Windows 11 + Quadro P2000 4GB (학습 부족, 코드 개발/ONNX/HEF용)",
+        "outputFormat": "bbox detection (5 division stages, no polygon mask)",
+        "labelStrategy": "bootstrap from existing Mask R-CNN model",
+        "dataLocation": "raws/JPEG_Export_Data (105) + captured_raw_images (22) = 127 images",
+        "rationale": {
+          "det_over_seg": "기존 Mask R-CNN이 polygon이 아닌 bbox로 학습됨 (dataset_config.py:88-94)",
+          "kaggle_over_local": "현 PC GPU(Quadro P2000 4GB) YOLO seg/det 학습 부족",
+          "bootstrap_over_manual": "원본 어노테이션 부재, 기존 모델 활용으로 0.5-1일 단축"
+        }
+      }
+    },
+    "deploy_detect_onioncell": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:55:51.216Z",
+        "lastUpdated": "2026-05-01T02:55:51.216Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\setup.sh"
+    },
+    "inference": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:56:32.170Z",
+        "lastUpdated": "2026-05-01T02:57:00.783Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\inference\\types.py"
+    },
+    "tools": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:56:33.570Z",
+        "lastUpdated": "2026-05-01T02:56:33.570Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\__init__.py"
+    },
+    "training": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:56:34.940Z",
+        "lastUpdated": "2026-05-01T02:56:34.940Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\training\\__init__.py"
+    },
+    "tests": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:56:36.293Z",
+        "lastUpdated": "2026-05-01T02:56:36.293Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\__init__.py"
+    },
+    "unit": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:56:37.654Z",
+        "lastUpdated": "2026-05-01T02:56:37.654Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\unit\\__init__.py"
+    },
+    "integration": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:56:39.011Z",
+        "lastUpdated": "2026-05-01T02:56:39.011Z"
+      },
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\integration\\__init__.py"
+    }
+  },
   "pipeline": {
     "currentPhase": 1,
     "level": "Dynamic",
-    "phaseHistory": []
+    "phaseHistory": [
+      {
+        "phase": 1,
+        "feature": "aihat-yolo-port",
+        "enteredAt": "2026-05-01T01:30:00.000Z"
+      }
+    ]
   },
   "session": {
     "startedAt": "2026-05-01T00:53:09.150Z",
-    "onboardingCompleted": false,
-    "lastActivity": "2026-05-01T00:53:09.150Z"
+    "onboardingCompleted": true,
+    "lastActivity": "2026-05-01T02:57:00.783Z"
   },
-  "history": []
+  "history": [
+    {
+      "ts": "2026-05-01T01:30:00.000Z",
+      "event": "plan_created",
+      "feature": "aihat-yolo-port",
+      "by": "claude"
+    },
+    {
+      "ts": "2026-05-01T01:45:00.000Z",
+      "event": "plan_updated",
+      "feature": "aihat-yolo-port",
+      "version": "0.3",
+      "note": "model: YOLO26-seg -> YOLOv11-seg (stability)",
+      "by": "claude"
+    },
+    {
+      "ts": "2026-05-01T02:00:00.000Z",
+      "event": "design_created",
+      "feature": "aihat-yolo-port",
+      "version": "0.1",
+      "note": "Discovered bbox-as-mask in legacy code; design includes seg/det branch decision at Phase 2.0",
+      "by": "claude"
+    },
+    {
+      "ts": "2026-05-01T02:30:00.000Z",
+      "event": "plan_updated",
+      "feature": "aihat-yolo-port",
+      "version": "0.4",
+      "note": "3 major decisions confirmed: (1) seg->det (bbox-as-mask), (2) Kaggle training (P2000 4GB insufficient), (3) bootstrap labeling (no annotations found)",
+      "by": "claude"
+    },
+    {
+      "ts": "2026-05-01T02:30:00.000Z",
+      "event": "design_updated",
+      "feature": "aihat-yolo-port",
+      "version": "0.2",
+      "note": "Refactored to det path: PC<->Kaggle separation, bootstrap labeling section, simplified postprocess (no mask decode)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T02:55:51.216Z",
+      "feature": "deploy_detect_onioncell",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:56:32.170Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:56:33.570Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:56:34.940Z",
+      "feature": "training",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:56:36.293Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:56:37.654Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:56:39.011Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:57:00.783Z",
+      "feature": "inference",
+      "phase": "do",
+      "action": "updated"
+    }
+  ]
 }

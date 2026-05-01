@@ -55,5 +55,33 @@ Thumbs.db
 *.log
 logs/
 
+# Datasets (large, generated, or downloaded)
+datasets/onioncell/
+datasets/*/images/
+datasets/*/labels/
+!datasets/.gitkeep
+
+# Raw microscope images (~3.2GB, 34-40MB per file — far exceeds GitHub limits)
+# Original location: raws/JPEG_Export_Data/ (105 files, 2020-10-07 capture session)
+# For training: downscaled subset is generated into datasets/onioncell/images/
+raws/
+
+# Model artifacts (large; generated)
+models/pt/*.pt
+models/onnx/*.onnx
+models/hef/*.hef
+!models/pt/.gitkeep
+!models/onnx/.gitkeep
+!models/hef/.gitkeep
+
+# Training run outputs
+runs/
+*.pt
+!yolo*.pt.lock
+
+# Legacy environment
+.legacy-venv/
+.venv/
+
 # OS
 $RECYCLE.BIN/
