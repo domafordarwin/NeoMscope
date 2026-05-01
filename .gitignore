@@ -85,5 +85,11 @@ runs/
 .legacy-venv/
 .venv/
 
+# Hailo deployment artifacts (large, license-restricted by Hailo)
+pi5-deploy/*.deb
+pi5-deploy/*.whl
+pi5-deploy/*.zip
+pi5-deploy/*.tar.gz
+
 # OS
 $RECYCLE.BIN/

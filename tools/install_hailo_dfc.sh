@@ -77,7 +77,19 @@ echo "[install_hailo_dfc.sh] Verifying installation..."
 if [[ -d "$WORKSPACE/hailo_model_zoo" ]]; then
     echo ""
     echo "[install_hailo_dfc.sh] Installing Hailo Model Zoo (editable, from clone)..."
-    "$VENV/bin/pip" install --quiet -e "$WORKSPACE/hailo_model_zoo"
+
+    # Hailo's setup.py expects a versions.py file 3 directories above setup.py
+    # — meant for installation from inside their internal monorepo. Create a
+    # shim so pip install -e . succeeds outside that monorepo.
+    DFC_VER="$("$VENV/bin/pip" show hailo_dataflow_compiler | awk '/^Version:/ {print $2}')"
+    SHIM="/root/versions.py"
+    if [[ ! -f "$SHIM" ]] || ! grep -q "$DFC_VER" "$SHIM" 2>/dev/null; then
+        printf 'DFC_VERSION = "%s"\nMZ_VERSION = "%s"\n' "$DFC_VER" "$DFC_VER" > "$SHIM"
+        echo "  Wrote $SHIM (DFC_VERSION=$DFC_VER)"
+    fi
+
+    # Must `cd` into the package dir for the editable install to find files
+    (cd "$WORKSPACE/hailo_model_zoo" && "$VENV/bin/pip" install --quiet -e .)
     "$VENV/bin/hailomz" --help > /dev/null && echo "  hailomz CLI OK"
 else
     echo "[install_hailo_dfc.sh] Skipping model zoo install (clone not found at $WORKSPACE/hailo_model_zoo)"
