@@ -28,10 +28,18 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
+import warnings
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+
+# Silence TF1 deprecation noise — there are dozens of warnings per inference call
+# and they obscure the actual progress output.
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 logger = logging.getLogger("bootstrap_labeling")
 
@@ -178,7 +186,15 @@ def bootstrap(
 
         lines: list[str] = []
         needs_review = len(boxes) == 0  # zero detections is suspicious
-        for box, cls_id, score in zip(boxes, cls_ids, scores, strict=True):
+        # Note: strict=True is Python 3.10+ only; this script also runs in
+        # the legacy Python 3.7 venv, so we assert lengths manually instead.
+        if not (len(boxes) == len(cls_ids) == len(scores)):
+            logger.warning(
+                "mrcnn output length mismatch on %s: %d/%d/%d boxes/cls/scores",
+                img_path.name, len(boxes), len(cls_ids), len(scores),
+            )
+            continue
+        for box, cls_id, score in zip(boxes, cls_ids, scores):  # noqa: B905
             if score < conf_min:
                 continue
             if score < review_min:
