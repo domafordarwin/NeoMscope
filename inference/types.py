@@ -7,7 +7,7 @@ only on `numpy` and stdlib, no GStreamer or hailo_platform.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
@@ -121,7 +121,7 @@ def letterbox_size(orig_shape: tuple[int, int], target: int) -> tuple[int, int, 
     """
     h, w = orig_shape
     scale = min(target / h, target / w)
-    return int(round(h * scale)), int(round(w * scale)), scale
+    return round(h * scale), round(w * scale), scale
 
 
 def unletterbox_bbox(

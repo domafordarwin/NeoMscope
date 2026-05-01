@@ -1,0 +1,24 @@
+# YOLOv11 dataset definition for NeoMscope onion cell division detection.
+#
+# This file is the source of truth for class taxonomy at training time.
+# It must be kept in sync with inference/types.py (CLASS_NAMES).
+#
+# `path` is relative to where Ultralytics resolves datasets — set by the user
+# at training time. Common values:
+#   - Local:  path: ../datasets/onioncell
+#   - Kaggle: path: /kaggle/working/datasets/onioncell
+
+path: ../datasets/onioncell
+train: images/train
+val: images/val
+test: images/test
+
+# 5 mitotic phases (no background class — YOLO handles "no object" implicitly)
+names:
+  0: Inter   # 간기 — non-dividing cells
+  1: Pro     # 전기 — chromosome condensation begins
+  2: Meta    # 중기 — chromosomes aligned at equator
+  3: Ana     # 후기 — sister chromatids separate
+  4: Telo    # 말기 — nuclear envelope reforms
+
+# Reference: docs/02-design/features/aihat-yolo-port.design.md §3.1
