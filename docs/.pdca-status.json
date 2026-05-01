@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-01T04:32:21.660Z",
+  "lastUpdated": "2026-05-01T04:36:01.403Z",
   "activeFeatures": [
     "aihat-yolo-port",
     "deploy_detect_onioncell",
@@ -78,9 +78,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:56:33.570Z",
-        "lastUpdated": "2026-05-01T04:32:21.660Z"
+        "lastUpdated": "2026-05-01T04:35:59.905Z"
       },
-      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\visualize_labels.py"
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tools\\package_for_roboflow.py"
     },
     "training": {
       "phase": "do",
@@ -117,9 +117,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:56:37.654Z",
-        "lastUpdated": "2026-05-01T03:08:17.285Z"
+        "lastUpdated": "2026-05-01T04:36:01.403Z"
       },
-      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\unit\\test_pipeline_mock.py"
+      "lastFile": "c:\\WorkSpace\\Project\\neoscope\\deploy_detect_onioncell\\tests\\unit\\test_package_for_roboflow.py"
     },
     "integration": {
       "phase": "do",
@@ -149,7 +149,7 @@
   "session": {
     "startedAt": "2026-05-01T00:53:09.150Z",
     "onboardingCompleted": true,
-    "lastActivity": "2026-05-01T04:32:21.660Z"
+    "lastActivity": "2026-05-01T04:36:01.403Z"
   },
   "history": [
     {
@@ -445,6 +445,30 @@
     {
       "timestamp": "2026-05-01T04:32:21.660Z",
       "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T04:35:18.012Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T04:35:37.060Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T04:35:59.905Z",
+      "feature": "tools",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T04:36:01.403Z",
+      "feature": "unit",
       "phase": "do",
       "action": "updated"
     }
