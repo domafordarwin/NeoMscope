@@ -25,11 +25,18 @@ ARCH="${HAILO_ARCH:-hailo10h}"   # Override with HAILO_ARCH=hailo8 for Hailo-8
 
 # --- Pre-flight ---
 if ! command -v hailomz >/dev/null 2>&1; then
-    echo "[compile_hef.sh] ERROR: 'hailomz' not found on PATH."
-    echo "[compile_hef.sh] Install Hailo Model Zoo (master branch):"
-    echo "[compile_hef.sh]   git clone -b master https://github.com/hailo-ai/hailo_model_zoo.git"
-    echo "[compile_hef.sh]   cd hailo_model_zoo && pip install -e ."
-    exit 2
+    # Try the standard WSL2 venv path
+    VENV_HAILOMZ="/root/hailo-workspace/venv/bin/hailomz"
+    if [[ -x "$VENV_HAILOMZ" ]]; then
+        echo "[compile_hef.sh] Found hailomz at $VENV_HAILOMZ — re-exec with venv on PATH"
+        export PATH="/root/hailo-workspace/venv/bin:$PATH"
+    else
+        echo "[compile_hef.sh] ERROR: 'hailomz' not found on PATH."
+        echo "[compile_hef.sh] Run 'bash tools/install_hailo_dfc.sh' first, then either:"
+        echo "[compile_hef.sh]   source /root/hailo-workspace/venv/bin/activate"
+        echo "[compile_hef.sh] or re-run this script (it will auto-detect the venv)."
+        exit 2
+    fi
 fi
 
 if [[ ! -f "$ONNX" ]]; then
@@ -56,12 +63,13 @@ echo "[compile_hef.sh] Compiling: $ONNX -> $HEF"
 echo "[compile_hef.sh]   arch:  $ARCH"
 echo "[compile_hef.sh]   calib: $CALIB ($n_calib images)"
 
-# yolo11s det config from the Model Zoo master branch.
+# yolov11s det config from the Model Zoo master branch.
 # If your trained model uses a different size (m/l/n), change the YAML accordingly.
+# Note: file is yolov11s.yaml (with 'v'), not yolo11s.yaml.
 hailomz compile \
     --ckpt "$ONNX" \
     --calib-path "$CALIB" \
-    --yaml "yolo11s.yaml" \
+    --yaml "yolov11s.yaml" \
     --hw-arch "$ARCH" \
     --output-dir "$(dirname "$HEF")"
 
