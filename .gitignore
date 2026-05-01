@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model weights (too large for GitHub - track via Git LFS or external storage)
+weights/*.h5
+weights/*.pth
+weights/*.weights
+weights/*.pt
+*.h5
+
+# Detection result outputs (regenerated)
+detection_results_captured/*
+detection_results_live/*
+!detection_results_captured/.gitkeep
+!detection_results_live/.gitkeep
+
+# Windows / macOS metadata
+desktop.ini
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Claude Code local overrides (keep .claude/settings.json shared)
+.claude/settings.local.json
+.claude/.credentials*
+
+# Logs
+*.log
+logs/
+
+# OS
+$RECYCLE.BIN/
