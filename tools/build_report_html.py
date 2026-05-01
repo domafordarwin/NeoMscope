@@ -14,6 +14,9 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import base64
+import mimetypes
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -170,8 +173,39 @@ EXTENSIONS = [
     "admonition",
 ]
 
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
 
-def render(md_text: str, title: str, source_path: Path) -> str:
+
+def embed_local_images(html: str, base_dir: Path) -> str:
+    """Replace `<img src="local/path">` with `<img src="data:image/...;base64,...">`.
+
+    Skips http(s):// and data: URLs. Resolves relative paths against base_dir.
+    Silently skips images that don't exist (so the HTML still renders).
+    """
+    pattern = re.compile(r'<img\s+([^>]*?)src="([^"]+)"([^>]*?)>', re.IGNORECASE)
+
+    def replace(match: re.Match) -> str:
+        before, src, after = match.group(1), match.group(2), match.group(3)
+        if src.startswith(("http://", "https://", "data:", "//")):
+            return match.group(0)
+
+        img_path = (base_dir / src).resolve()
+        if not img_path.is_file() or img_path.suffix.lower() not in IMAGE_EXTS:
+            return match.group(0)
+
+        mime = mimetypes.guess_type(str(img_path))[0] or "application/octet-stream"
+        b64 = base64.b64encode(img_path.read_bytes()).decode("ascii")
+        return f'<img {before}src="data:{mime};base64,{b64}"{after}>'
+
+    return pattern.sub(replace, html)
+
+
+def render(
+    md_text: str,
+    title: str,
+    source_path: Path,
+    embed_images_from: Path | None = None,
+) -> str:
     """Render markdown to a complete HTML document."""
     md = markdown.Markdown(
         extensions=EXTENSIONS,
@@ -181,6 +215,8 @@ def render(md_text: str, title: str, source_path: Path) -> str:
         output_format="html5",
     )
     body = md.convert(md_text)
+    if embed_images_from is not None:
+        body = embed_local_images(body, embed_images_from)
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     return f"""<!doctype html>

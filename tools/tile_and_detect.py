@@ -424,9 +424,21 @@ def main(argv=None):
     if args.image:
         images = [args.image]
     else:
+        # NOTE: Windows file globbing is case-insensitive, so iterating *.jpg
+        # AND *.JPG would yield each file twice. Dedupe on absolute path.
+        # Also skip files starting with `_` (our metadata convention:
+        # _overview.jpg, _tissue_mask.jpg, _aggregate.json, _rois_overview.jpg).
+        seen: set[Path] = set()
         images = []
         for ext in IMAGE_GLOBS:
-            images.extend(sorted(args.image_dir.glob(ext)))
+            for p in sorted(args.image_dir.glob(ext)):
+                resolved = p.resolve()
+                if resolved in seen:
+                    continue
+                if p.name.startswith("_") or "_rois_overview" in p.name:
+                    continue
+                seen.add(resolved)
+                images.append(p)
         if args.limit > 0:
             images = images[: args.limit]
 
