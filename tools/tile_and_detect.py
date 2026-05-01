@@ -82,6 +82,8 @@ class TileReport:
     n_tiles: int = 0
     n_tiles_with_detections: int = 0
     total_detections: int = 0
+    dropped_too_small: int = 0
+    dropped_outside_tissue: int = 0
     detections_per_class: dict[int, int] = field(default_factory=dict)
     avg_confidence: float = 0.0
 
@@ -137,6 +139,42 @@ def _is_tile_skippable(tile_bgr, std_threshold: float = 8.0) -> bool:
     return float(gray.std()) < std_threshold
 
 
+def build_tissue_mask(image_bgr, bg_threshold: int = 235, min_blob_px: int = 5000):
+    """Build a binary mask of where actual onion-root tissue is in the scan.
+
+    Used to filter out detections that the model places in plain white
+    background. Heuristic:
+        1. Threshold: pixels darker than bg_threshold are candidate tissue.
+        2. Morphological close to fill cell-wall gaps inside tissue.
+        3. Drop tiny connected components (< min_blob_px) — these are
+           specks, ink dots, scratches.
+        4. Dilate slightly so tissue-edge cells don't get excluded.
+
+    Returns a uint8 mask of the same H/W as image (0 = background, 255 = tissue).
+    """
+    import cv2
+    import numpy as np
+
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    # Tissue = darker than threshold
+    _, mask = cv2.threshold(gray, bg_threshold, 255, cv2.THRESH_BINARY_INV)
+
+    # Close small holes (cell walls between dark cells)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+    # Drop tiny components
+    n_labels, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    keep = np.zeros_like(mask)
+    for i in range(1, n_labels):  # skip background label 0
+        if stats[i, cv2.CC_STAT_AREA] >= min_blob_px:
+            keep[labels == i] = 255
+
+    # Dilate so cells right at tissue edges aren't filtered out
+    keep = cv2.dilate(keep, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (21, 21)))
+    return keep
+
+
 def detect_one_image(
     model,
     image_path: Path,
@@ -146,6 +184,8 @@ def detect_one_image(
     skip_blank_tiles: bool = True,
     save_tiles: bool = False,
     save_overview: bool = True,
+    min_bbox_size: int = 25,
+    use_tissue_mask: bool = True,
 ) -> TileReport:
     """Run tiled inference on one image and return its report.
 
@@ -162,6 +202,24 @@ def detect_one_image(
     stem = image_path.stem
     img_out_dir = output_dir / stem
     img_out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build tissue mask once per image — used to filter out detections
+    # the model places in plain background (a known mrcnn failure mode here).
+    tissue_mask = None
+    if use_tissue_mask:
+        logger.info("    building tissue mask ...")
+        tissue_mask = build_tissue_mask(image)
+        # Save mask preview for sanity
+        mask_preview_size = 1600
+        mask_scale = min(1.0, mask_preview_size / max(h, w))
+        if mask_scale < 1.0:
+            small_mask = cv2.resize(
+                tissue_mask, (int(w * mask_scale), int(h * mask_scale)),
+                interpolation=cv2.INTER_NEAREST,
+            )
+        else:
+            small_mask = tissue_mask
+        cv2.imwrite(str(img_out_dir / "_tissue_mask.jpg"), small_mask, [cv2.IMWRITE_JPEG_QUALITY, 80])
 
     report = TileReport(
         image_name=image_path.name,
@@ -224,9 +282,25 @@ def detect_one_image(
             gy1 = int(y + min(ty1, h_eff))
             gx2 = int(x + min(tx2, w_eff))
             gy2 = int(y + min(ty2, h_eff))
-            # Drop bboxes that are mostly in the padded region
+
+            # Filter 1: drop bboxes mostly in the padded white region
             if gx2 - gx1 < 5 or gy2 - gy1 < 5:
                 continue
+
+            # Filter 2: minimum size (real cells are ~80-160 px at native res)
+            bbox_w = gx2 - gx1
+            bbox_h = gy2 - gy1
+            if bbox_w < min_bbox_size or bbox_h < min_bbox_size:
+                report.dropped_too_small += 1
+                continue
+
+            # Filter 3: bbox center must be inside tissue mask
+            if tissue_mask is not None:
+                cy = (gy1 + gy2) // 2
+                cx = (gx1 + gx2) // 2
+                if 0 <= cy < h and 0 <= cx < w and tissue_mask[cy, cx] == 0:
+                    report.dropped_outside_tissue += 1
+                    continue
 
             yolo_cls = int(cls_id) - 1  # mrcnn 1-indexed -> yolo 0-indexed
             if yolo_cls < 0 or yolo_cls >= 5:
@@ -297,8 +371,9 @@ def detect_one_image(
         cv2.imwrite(str(img_out_dir / "_overview.jpg"), overview, [cv2.IMWRITE_JPEG_QUALITY, 85])
 
     logger.info(
-        "    -> %d dets across %d/%d tiles, avg conf %.3f",
+        "    -> %d kept dets across %d/%d tiles  (dropped %d small, %d outside-tissue)  avg conf %.3f",
         report.total_detections, report.n_tiles_with_detections, report.n_tiles,
+        report.dropped_too_small, report.dropped_outside_tissue,
         report.avg_confidence,
     )
     return report
@@ -320,6 +395,10 @@ def _parse_args(argv=None):
                    help="Save each tile as a JPG (large output dir)")
     p.add_argument("--no-overview", action="store_true",
                    help="Skip writing the downsampled overview JPG")
+    p.add_argument("--min-bbox-size", type=int, default=25,
+                   help="Drop bboxes whose width or height < this (default 25 px)")
+    p.add_argument("--no-tissue-mask", action="store_true",
+                   help="Skip the tissue-mask filter (keeps all in-bounds detections)")
     p.add_argument("--limit", type=int, default=0,
                    help="If using --image-dir, only process this many (0 = all)")
     p.add_argument("--log-level", default="INFO")
@@ -383,6 +462,8 @@ def main(argv=None):
                 skip_blank_tiles=not args.no_skip_blank,
                 save_tiles=args.save_tiles,
                 save_overview=not args.no_overview,
+                min_bbox_size=args.min_bbox_size,
+                use_tissue_mask=not args.no_tissue_mask,
             )
         except Exception as exc:
             logger.error("Failed on %s: %s", img_path.name, exc)
