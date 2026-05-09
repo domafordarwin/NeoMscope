@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>NeoMscope · v2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:        #F6F4ED;
+  --paper-dim:    #EFECE2;
+  --ink:          #0F1611;
+  --ink-soft:     #41463F;
+  --ink-mute:     #797E76;
+  --grid:         rgba(15,22,17,0.06);
+  --line:         #DEDACA;
+  --line-soft:    #ECE8D8;
+  --accent:       #1D49C0;
+  --accent-deep:  #122F86;
+  --accent-soft:  #DEE7FB;
+  --c-inter:      #C42A2A;
+  --c-pro:        #1E8B47;
+  --c-meta:       #2256C9;
+  --c-ana:        #0B7F9C;
+  --c-telo:       #B07A07;
+  --mono:         'IBM Plex Mono', 'JetBrains Mono', Consolas, monospace;
+  --sans:         'Pretendard', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1024px; height: 600px;
+  overflow: hidden;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  background-image:
+    linear-gradient(0deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence baseFrequency='1.4' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: auto, 320px 320px;
+}
+
+/* === TITLE BAR ============================================== */
+.titlebar {
+  height: 28px;
+  display: flex; align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.5));
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.brand {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--ink);
+  margin-right: 14px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.brand .mark {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, var(--accent) 30%, var(--accent-deep) 100%);
+  box-shadow: 0 0 0 1px rgba(15,22,17,0.1), 0 0 0 3px rgba(29,73,192,0.1);
+}
+.subtitle { color: var(--ink-soft); }
+.subtitle .ko {
+  font-family: var(--sans);
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+  margin-left: 12px;
+}
+.titlebar .right { margin-left: auto; display: flex; gap: 18px; }
+.led { display: inline-flex; align-items: center; gap: 6px; }
+.led::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c-pro);
+  box-shadow: 0 0 6px var(--c-pro);
+}
+.led.cool::before { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+/* === TABS =================================================== */
+.tabs {
+  height: 32px;
+  display: flex;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  gap: 2px;
+}
+.tab {
+  display: inline-flex; align-items: center;
+  padding: 0 18px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-mute);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  letter-spacing: 0.01em;
+}
+.tab .num {
+  font-family: var(--mono);
+  font-size: 9px;
+  margin-right: 6px;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+}
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.tab.active .num { color: var(--accent); }
+
+/* === MAIN GRID ============================================== */
+.main {
+  height: 540px;
+  padding: 8px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.top {
+  height: 332px;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 8px;
+}
+.bottom {
+  height: 172px;
+}
+
+/* === VIDEO PANE ============================================ */
+.scope {
+  position: relative;
+  background: #181410;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.scope svg { display: block; width: 100%; height: 100%; }
+.scope .meta-tl {
+  position: absolute; top: 10px; left: 12px;
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(246,244,237,0.78);
+}
+.scope .meta-tl::before {
+  content: ''; display: inline-block;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c-inter);
+  margin-right: 8px; vertical-align: middle;
+  box-shadow: 0 0 6px var(--c-inter);
+  animation: blink 1.6s infinite;
+}
+@keyframes blink {
+  0%, 60% { opacity: 1; }
+  70%, 100% { opacity: 0.35; }
+}
+.scope .meta-tr {
+  position: absolute; top: 10px; right: 12px;
+  font-family: var(--mono); font-size: 9px;
+  color: rgba(246,244,237,0.65);
+  letter-spacing: 0.08em;
+}
+.scope .meta-bl {
+  position: absolute; bottom: 10px; left: 12px;
+  font-family: var(--mono); font-size: 9px;
+  color: rgba(246,244,237,0.55);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.scope .meta-br {
+  position: absolute; bottom: 10px; right: 12px;
+  font-family: var(--mono); font-size: 9px;
+  color: rgba(246,244,237,0.55);
+  letter-spacing: 0.08em;
+}
+.scope .reticle {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.bbox-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* === SIDE PANELS =========================================== */
+.side {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+  min-height: 0;
+}
+.panel {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(2px);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 9px 11px 8px;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.panel-title {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: flex; align-items: baseline; justify-content: space-between;
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.panel-title .ko {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--ink);
+}
+
+/* Detection results: big number */
+.count {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.count .lbl {
+  font-family: var(--mono); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-mute);
+}
+.count .num {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+}
+.count .num .delta {
+  font-size: 10px;
+  color: var(--c-pro);
+  margin-left: 6px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  vertical-align: top;
+  position: relative; top: 4px;
+}
+
+.chips {
+  display: flex; flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 6px;
+}
+.chip {
+  display: grid;
+  grid-template-columns: 3px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink);
+}
+.chip .bar { height: 12px; border-radius: 1px; }
+.chip .name {
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.chip .bar-mini {
+  width: 60px; height: 4px;
+  background: var(--line-soft); border-radius: 1px;
+  overflow: hidden;
+}
+.chip .bar-mini-fill { height: 100%; opacity: 0.8; }
+.chip .count {
+  font-family: var(--mono);
+  color: var(--ink-soft);
+  font-size: 10px;
+  text-align: right;
+  width: 16px;
+}
+
+.subsec {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+.slider-label {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-mute);
+}
+.slider-label .ko {
+  font-family: var(--sans);
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+}
+.slider-label .v {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  font-weight: 500;
+}
+.slider {
+  position: relative;
+  height: 14px;
+  margin-top: 6px;
+}
+.slider .track {
+  position: absolute; top: 6px; left: 0; right: 0;
+  height: 2px; background: var(--line); border-radius: 1px;
+}
+.slider .ticks {
+  position: absolute; top: 4px; left: 0; right: 0;
+  display: flex; justify-content: space-between;
+}
+.slider .ticks i {
+  width: 1px; height: 6px; background: var(--line);
+}
+.slider .fill {
+  position: absolute; top: 6px; left: 0; height: 2px;
+  background: var(--accent); border-radius: 1px;
+}
+.slider .thumb {
+  position: absolute; top: 3px;
+  width: 8px; height: 8px;
+  background: var(--paper);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(29,73,192,0.12);
+}
+.fps {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.fps .v { color: var(--ink); font-weight: 500; }
+.fps .spark { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.fps .spark i {
+  width: 2px; background: var(--accent-soft);
+  display: block;
+}
+
+/* Tools */
+.tools-panel { padding: 10px 12px 12px; }
+.tools-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+.tool-btn {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 7px 0;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  letter-spacing: -0.01em;
+  cursor: default;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  gap: 5px;
+}
+.tool-btn .icon { width: 11px; height: 11px; flex: 0 0 11px; }
+.tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* === BOTTOM ROW ============================================ */
+.bottom {
+  display: grid;
+  grid-template-columns: 1.05fr 1.25fr 1.4fr;
+  gap: 8px;
+}
+.bottom .panel { height: 172px; overflow: hidden; }
+.capture { padding: 10px 14px 10px; }
+.cap-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+}
+.cap-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px;
+}
+.cap-btn .ring {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.cap-btn.record .ring {
+  border-color: var(--line);
+}
+.cap-btn.record .dot {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--c-inter);
+  box-shadow: 0 0 0 2px var(--paper), 0 0 6px rgba(196,42,42,0.4);
+}
+.cap-btn .lbl {
+  font-family: var(--mono);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-mute);
+}
+.cap-btn .lbl-ko {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* Mode */
+.mode-panel { padding: 12px 14px; }
+.mode-row {
+  display: flex; flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+.mode {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-mute);
+  padding: 2px 0;
+}
+.mode .dot {
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  position: relative;
+  flex: 0 0 12px;
+}
+.mode .desc {
+  font-family: var(--mono);
+  font-size: 8px;
+  margin-left: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+}
+.mode.active { color: var(--ink); font-weight: 600; }
+.mode.active .dot { border-color: var(--accent); border-width: 2px; }
+.mode.active .dot::after {
+  content: '';
+  position: absolute; inset: 1.5px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+.mode.active .desc { color: var(--accent); }
+
+/* Image adjust */
+.adj-panel { padding: 11px 14px; }
+.adj {
+  display: grid;
+  grid-template-columns: 56px 1fr 38px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+.adj + .adj { border-top: 1px dashed var(--line); padding-top: 6px; margin-top: 2px; }
+.adj .lab {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+.adj .lab .unit {
+  display: block;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.16em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.adj .v {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  text-align: right;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+/* === FOOTER STRIP =========================================== */
+.statusbar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE BAR -->
+<div class="titlebar">
+  <span class="brand"><span class="mark"></span>NeoMscope</span>
+  <span class="subtitle">v2.0 · hailo-10h · 1024×600
+    <span class="ko">양파 세포 분열 검출</span>
+  </span>
+  <div class="right">
+    <span class="led">npu online</span>
+    <span class="led cool">cam 0 · 1280×720</span>
+    <span>02:14:33 KST</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active"><span class="num">01</span>Live</div>
+  <div class="tab"><span class="num">02</span>Batch</div>
+  <div class="tab"><span class="num">03</span>Archive</div>
+  <div class="tab"><span class="num">04</span>Settings</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="top">
+
+    <!-- VIDEO -->
+    <div class="scope">
+      <svg viewBox="0 0 600 340" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <!-- Cellular tissue pattern -->
+          <pattern id="cells" x="0" y="0" width="62" height="46" patternUnits="userSpaceOnUse">
+            <rect width="62" height="46" fill="#E2D5B8"/>
+            <path d="M 0 23 L 62 23 M 31 0 L 31 46" stroke="#917F5A" stroke-width="0.6" stroke-opacity="0.55" fill="none"/>
+            <path d="M 0 0 L 62 46 M 62 0 L 0 46" stroke="#A89773" stroke-width="0.3" stroke-opacity="0.25" fill="none"/>
+            <ellipse cx="14" cy="11" rx="3.2" ry="4" fill="#2B2110" opacity="0.78"/>
+            <ellipse cx="46" cy="35" rx="3.6" ry="4.2" fill="#2B2110" opacity="0.7"/>
+            <ellipse cx="46" cy="12" rx="2.4" ry="3" fill="#3D2E16" opacity="0.6"/>
+            <ellipse cx="14" cy="34" rx="2.6" ry="3.2" fill="#3D2E16" opacity="0.55"/>
+          </pattern>
+          <radialGradient id="vignette" cx="50%" cy="50%" r="80%">
+            <stop offset="50%" stop-color="black" stop-opacity="0"/>
+            <stop offset="100%" stop-color="black" stop-opacity="0.55"/>
+          </radialGradient>
+          <linearGradient id="warm" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFD088" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <rect width="600" height="340" fill="url(#cells)"/>
+        <rect width="600" height="340" fill="url(#warm)"/>
+        <rect width="600" height="340" fill="url(#vignette)"/>
+
+        <!-- Subtle scanlines -->
+        <g opacity="0.04">
+          <path d="M0 0h600M0 4h600M0 8h600M0 12h600" stroke="white" stroke-width="0.3"/>
+        </g>
+
+        <!-- Detections (12 total) -->
+        <g fill="none" stroke-width="1.4">
+          <!-- Inter (red) x2 -->
+          <g stroke="#C42A2A">
+            <rect x="118" y="78" width="48" height="42"/>
+            <rect x="370" y="232" width="46" height="44"/>
+          </g>
+          <!-- Pro (green) x4 -->
+          <g stroke="#1E8B47">
+            <rect x="200" y="118" width="46" height="42"/>
+            <rect x="290" y="98" width="48" height="44"/>
+            <rect x="178" y="218" width="50" height="42"/>
+            <rect x="430" y="158" width="46" height="42"/>
+          </g>
+          <!-- Meta (blue) x1 -->
+          <g stroke="#2256C9">
+            <rect x="376" y="78" width="48" height="42"/>
+          </g>
+          <!-- Ana (cyan) x3 -->
+          <g stroke="#0B7F9C">
+            <rect x="78" y="168" width="46" height="44"/>
+            <rect x="258" y="200" width="44" height="42"/>
+            <rect x="448" y="240" width="48" height="42"/>
+          </g>
+          <!-- Telo (yellow) x2 -->
+          <g stroke="#B07A07">
+            <rect x="138" y="270" width="50" height="42"/>
+            <rect x="320" y="158" width="48" height="44"/>
+          </g>
+        </g>
+
+        <!-- bbox tag examples (only 3, to avoid clutter) -->
+        <g class="bbox-label">
+          <rect x="118" y="68" width="22" height="9" fill="#C42A2A" rx="1"/>
+          <text x="129" y="75" fill="#fff" font-family="IBM Plex Mono" font-size="6" letter-spacing="0.5" text-anchor="middle" font-weight="600">INTER</text>
+
+          <rect x="290" y="88" width="18" height="9" fill="#1E8B47" rx="1"/>
+          <text x="299" y="95" fill="#fff" font-family="IBM Plex Mono" font-size="6" letter-spacing="0.5" text-anchor="middle" font-weight="600">PRO</text>
+
+          <rect x="376" y="68" width="22" height="9" fill="#2256C9" rx="1"/>
+          <text x="387" y="75" fill="#fff" font-family="IBM Plex Mono" font-size="6" letter-spacing="0.5" text-anchor="middle" font-weight="600">META</text>
+        </g>
+
+        <!-- Crosshairs reticle (subtle) -->
+        <g stroke="rgba(255,255,255,0.18)" stroke-width="0.4" stroke-dasharray="2 4">
+          <line x1="0" y1="170" x2="600" y2="170"/>
+          <line x1="300" y1="0" x2="300" y2="340"/>
+        </g>
+      </svg>
+      <div class="meta-tl">REC · LIVE</div>
+      <div class="meta-tr">00:14:23 / 30 fps</div>
+      <div class="meta-bl">scan A · field 03 · 400×</div>
+      <div class="meta-br">2026-05-09 · 14:23:11</div>
+    </div>
+
+    <!-- SIDE -->
+    <div class="side">
+
+      <!-- Detection results -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>Detection Results</span>
+          <span class="ko">검출 결과</span>
+        </div>
+
+        <div class="count">
+          <span class="lbl">objects detected</span>
+          <span class="num">12<span class="delta">+3</span></span>
+        </div>
+
+        <div class="chips">
+          <div class="chip">
+            <div class="bar" style="background: var(--c-inter)"></div>
+            <span class="name">Inter</span>
+            <div class="bar-mini"><div class="bar-mini-fill" style="width: 17%; background: var(--c-inter)"></div></div>
+            <span class="count">02</span>
+          </div>
+          <div class="chip">
+            <div class="bar" style="background: var(--c-pro)"></div>
+            <span class="name">Pro</span>
+            <div class="bar-mini"><div class="bar-mini-fill" style="width: 33%; background: var(--c-pro)"></div></div>
+            <span class="count">04</span>
+          </div>
+          <div class="chip">
+            <div class="bar" style="background: var(--c-meta)"></div>
+            <span class="name">Meta</span>
+            <div class="bar-mini"><div class="bar-mini-fill" style="width: 8%; background: var(--c-meta)"></div></div>
+            <span class="count">01</span>
+          </div>
+          <div class="chip">
+            <div class="bar" style="background: var(--c-ana)"></div>
+            <span class="name">Ana</span>
+            <div class="bar-mini"><div class="bar-mini-fill" style="width: 25%; background: var(--c-ana)"></div></div>
+            <span class="count">03</span>
+          </div>
+          <div class="chip">
+            <div class="bar" style="background: var(--c-telo)"></div>
+            <span class="name">Telo</span>
+            <div class="bar-mini"><div class="bar-mini-fill" style="width: 17%; background: var(--c-telo)"></div></div>
+            <span class="count">02</span>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <div class="slider-label">
+            <span><span class="ko">신뢰도 임계값</span> · conf</span>
+            <span class="v">0.50</span>
+          </div>
+          <div class="slider">
+            <div class="track"></div>
+            <div class="ticks">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <div class="fill" style="width: 50%"></div>
+            <div class="thumb" style="left: calc(50% - 4px)"></div>
+          </div>
+          <div class="fps">
+            <span>fps</span>
+            <span class="spark">
+              <i style="height: 4px"></i><i style="height: 6px"></i><i style="height: 8px"></i>
+              <i style="height: 7px"></i><i style="height: 10px"></i><i style="height: 9px"></i>
+              <i style="height: 11px"></i><i style="height: 8px"></i><i style="height: 12px; background: var(--accent)"></i>
+            </span>
+            <span class="v">28.3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <div class="panel tools-panel">
+        <div class="panel-title">
+          <span>Tools</span>
+          <span class="ko">도구</span>
+        </div>
+        <div class="tools-row">
+          <button class="tool-btn">
+            <svg class="icon" viewBox="0 0 11 11" fill="none">
+              <circle cx="4.5" cy="4.5" r="3" stroke="currentColor" stroke-width="1"/>
+              <path d="M7 7L10 10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+              <path d="M3 4.5h3M4.5 3v3" stroke="currentColor" stroke-width="0.8"/>
+            </svg>
+            확대
+          </button>
+          <button class="tool-btn">
+            <svg class="icon" viewBox="0 0 11 11" fill="none">
+              <circle cx="4.5" cy="4.5" r="3" stroke="currentColor" stroke-width="1"/>
+              <path d="M7 7L10 10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+              <path d="M3 4.5h3" stroke="currentColor" stroke-width="0.8"/>
+            </svg>
+            축소
+          </button>
+          <button class="tool-btn">
+            <svg class="icon" viewBox="0 0 11 11" fill="none">
+              <path d="M2 5.5a3.5 3.5 0 1 1 1.05 2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+              <path d="M2 3v2.5h2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            초기화
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom">
+
+    <!-- Capture -->
+    <div class="panel capture">
+      <div class="panel-title">
+        <span>Capture</span>
+        <span class="ko">촬영 제어</span>
+      </div>
+      <div class="cap-row">
+        <div class="cap-btn">
+          <div class="ring">
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+              <rect x="0.5" y="2.8" width="17" height="10.7" rx="1.5" stroke="#0F1611" stroke-width="1.1"/>
+              <circle cx="9" cy="8" r="3.4" stroke="#0F1611" stroke-width="1.1"/>
+              <circle cx="9" cy="8" r="1.2" fill="#0F1611"/>
+              <rect x="6.4" y="0.5" width="5.2" height="2.5" rx="0.4" stroke="#0F1611" stroke-width="1.1" fill="none"/>
+            </svg>
+          </div>
+          <span class="lbl-ko">촬영</span>
+        </div>
+        <div class="cap-btn record">
+          <div class="ring"><div class="dot"></div></div>
+          <span class="lbl-ko">녹화</span>
+        </div>
+        <div class="cap-btn">
+          <div class="ring">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2v10h10V4l-2-2H2z" stroke="#0F1611" stroke-width="1.1" stroke-linejoin="round"/>
+              <rect x="4" y="2" width="6" height="3.5" stroke="#0F1611" stroke-width="1.1" fill="none"/>
+              <path d="M4 8.5h6M4 10.5h6" stroke="#0F1611" stroke-width="0.9" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="lbl-ko">저장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode -->
+    <div class="panel mode-panel">
+      <div class="panel-title">
+        <span>Detection Mode</span>
+        <span class="ko">검출 모드</span>
+      </div>
+      <div class="mode-row">
+        <div class="mode active"><div class="dot"></div>실시간<span class="desc">live · 30 fps</span></div>
+        <div class="mode"><div class="dot"></div>정지화면<span class="desc">freeze · single</span></div>
+        <div class="mode"><div class="dot"></div>일괄<span class="desc">batch · folder</span></div>
+      </div>
+    </div>
+
+    <!-- Image adjust -->
+    <div class="panel adj-panel">
+      <div class="panel-title">
+        <span>Image Adjust</span>
+        <span class="ko">이미지 조정</span>
+      </div>
+      <div class="adj">
+        <div class="lab">노출<span class="unit">exposure · ms</span></div>
+        <div class="slider">
+          <div class="track"></div>
+          <div class="ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="fill" style="width: 18%"></div>
+          <div class="thumb" style="left: calc(18% - 4px)"></div>
+        </div>
+        <div class="v">10.0</div>
+      </div>
+      <div class="adj">
+        <div class="lab">게인<span class="unit">gain · ×</span></div>
+        <div class="slider">
+          <div class="track"></div>
+          <div class="ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="fill" style="width: 12%"></div>
+          <div class="thumb" style="left: calc(12% - 4px)"></div>
+        </div>
+        <div class="v">1.0</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
