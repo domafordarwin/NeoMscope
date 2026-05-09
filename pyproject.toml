@@ -44,6 +44,11 @@ inference = [
     # Core inference deps. hailo-platform is system-installed.
 ]
 
+# GUI for Pi 5 official 7" 1024x600 DSI touchscreen
+gui = [
+    "PySide6>=6.6",
+]
+
 [project.scripts]
 neomscope-bootstrap = "tools.bootstrap_labeling:main"
 neomscope-validate = "tools.validate_dataset:main"

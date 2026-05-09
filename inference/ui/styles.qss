@@ -1,0 +1,207 @@
+/* NeoMscope Pi 5 GUI — clean light theme (1024x600 target) */
+
+QMainWindow, QWidget {
+    background: #ffffff;
+    color: #1f2328;
+    font-family: "Segoe UI", "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+    font-size: 12px;
+}
+
+/* ----- Title bar ----- */
+QLabel#title {
+    background: #1f6feb;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 16px;
+    qproperty-alignment: AlignCenter;
+}
+
+/* ----- Tab bar ----- */
+QTabWidget::pane {
+    border: 1px solid #d0d7de;
+    background: white;
+    top: 0px;
+}
+
+QTabBar {
+    background: #ffffff;
+}
+
+QTabBar::tab {
+    background: #ffffff;
+    color: #57606a;
+    padding: 8px 22px;
+    border: 1px solid #d0d7de;
+    border-bottom: none;
+    margin-right: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 80px;
+}
+
+QTabBar::tab:selected {
+    background: #1f6feb;
+    color: white;
+    border-color: #1f6feb;
+}
+
+QTabBar::tab:!selected:hover {
+    background: #f6f8fa;
+}
+
+/* ----- Group boxes (panels) ----- */
+QGroupBox {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding-top: 22px;
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2328;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 4px 12px;
+    background: transparent;
+}
+
+/* ----- Buttons ----- */
+QPushButton {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #1f2328;
+    font-size: 12px;
+    min-height: 28px;
+}
+
+QPushButton:hover {
+    background: #f6f8fa;
+    border-color: #1f6feb;
+}
+
+QPushButton:pressed {
+    background: #eaeef2;
+}
+
+/* Round capture buttons */
+QPushButton#round {
+    background: #ffffff;
+    border: 2px solid #d0d7de;
+    border-radius: 22px;
+    min-width: 44px;
+    max-width: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    font-size: 18px;
+}
+
+QPushButton#round:hover {
+    border-color: #1f6feb;
+    background: #f6f8fa;
+}
+
+QPushButton#round_record {
+    background: #ffffff;
+    border: 2px solid #d0d7de;
+    border-radius: 22px;
+    min-width: 44px;
+    max-width: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    color: #cf222e;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+QPushButton#tool {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+/* ----- Sliders ----- */
+QSlider::groove:horizontal {
+    height: 4px;
+    background: #d0d7de;
+    border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #1f6feb;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background: #1f6feb;
+    width: 14px;
+    height: 14px;
+    margin: -6px 0;
+    border-radius: 7px;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #2c7df0;
+}
+
+/* ----- Radio buttons (mode selector) ----- */
+QRadioButton {
+    spacing: 6px;
+    font-size: 12px;
+    color: #1f2328;
+}
+
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    border: 2px solid #d0d7de;
+    background: white;
+}
+
+QRadioButton::indicator:checked {
+    background: #1f6feb;
+    border-color: #1f6feb;
+}
+
+QRadioButton::indicator:hover {
+    border-color: #1f6feb;
+}
+
+/* ----- Labels ----- */
+QLabel#section {
+    font-size: 12px;
+    font-weight: 600;
+    color: #57606a;
+}
+
+QLabel#metric_value {
+    color: #1f6feb;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#legend_chip {
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1f2328;
+}
+
+QLabel#video {
+    background: #1f2328;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+}
+
+QLabel#count_value {
+    color: #cf222e;
+    font-size: 16px;
+    font-weight: 700;
+}
