@@ -36,6 +36,7 @@ tools = [
     "matplotlib>=3.8",
     "scikit-learn>=1.5",
     "markdown>=3.10",
+    "albumentations>=1.4",
 ]
 
 # Used on Raspberry Pi 5 only — installed by setup.sh
@@ -52,11 +53,13 @@ gui = [
 [project.scripts]
 neomscope-bootstrap = "tools.bootstrap_labeling:main"
 neomscope-validate = "tools.validate_dataset:main"
+neomscope-augment = "tools.augment_and_split:main"
 neomscope-export = "tools.export_onnx:main"
 neomscope-build-report = "tools.build_report_html:main"
 neomscope-live = "inference.live_detect:main"
 neomscope-batch = "inference.batch_detect:main"
 neomscope-capture = "inference.capture_and_detect:main"
+neomscope-gui = "inference.ui.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["inference", "tools", "training"]
