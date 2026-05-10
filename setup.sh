@@ -105,28 +105,44 @@ sudo apt-get update -y
 sudo apt-get install -y --no-install-recommends "${APT_PKGS[@]}"
 
 # ---- 2. Hailo APT repo + runtime ----
+# Each package is optional and installed independently — missing one doesn't
+# block the rest of setup. The GUI runs in mock mode without hailo_platform,
+# and the user can install the Python binding later from Hailo Dev Zone.
 if [[ $INSTALL_HAILO = 1 ]]; then
-    echo "[setup.sh] Setting up Hailo APT repository..."
-    if ! command -v hailortcli >/dev/null 2>&1; then
+    if command -v hailortcli >/dev/null 2>&1; then
+        echo "[setup.sh] hailortcli already on PATH — skipping APT repo setup."
+    else
+        echo "[setup.sh] Setting up Hailo APT repository..."
         curl -fsSL https://hailo.ai/developer-zone/sw-downloads/hailo.gpg \
-            | sudo gpg --dearmor -o /usr/share/keyrings/hailo.gpg
+            | sudo gpg --dearmor -o /usr/share/keyrings/hailo.gpg || true
         echo "deb [signed-by=/usr/share/keyrings/hailo.gpg] https://hailo.ai/apt stable main" \
-            | sudo tee /etc/apt/sources.list.d/hailo.list
-        sudo apt-get update -y
+            | sudo tee /etc/apt/sources.list.d/hailo.list >/dev/null
+        sudo apt-get update -y || true
     fi
 
-    echo "[setup.sh] Installing HailoRT + TAPPAS..."
-    sudo apt-get install -y --no-install-recommends \
-        hailort hailo-tappas-core python3-hailo-platform || {
-        echo "[setup.sh] APT install failed. Falling back to local .deb if present..."
-        if compgen -G "$PROJECT_ROOT/pi5-deploy/hailort-pcie-driver_*.deb" >/dev/null; then
-            echo "[setup.sh] Installing $PROJECT_ROOT/pi5-deploy/hailort-pcie-driver_*.deb"
-            sudo apt-get install -y "$PROJECT_ROOT"/pi5-deploy/hailort-pcie-driver_*.deb
+    echo "[setup.sh] Installing Hailo packages (each optional)..."
+    for pkg in hailort hailo-tappas-core python3-hailo-platform; do
+        if dpkg -s "$pkg" >/dev/null 2>&1; then
+            echo "  - $pkg : already installed ✓"
+        elif sudo apt-get install -y --no-install-recommends "$pkg" 2>/dev/null; then
+            echo "  - $pkg : installed ✓"
         else
-            echo "[setup.sh] No local .deb found in pi5-deploy/. Check Hailo Dev Zone." >&2
-            exit 1
+            echo "  - $pkg : NOT AVAILABLE in apt (skipping)"
         fi
-    }
+    done
+
+    # Local .deb fallback for the PCIe driver (if user staged it)
+    if compgen -G "$PROJECT_ROOT/pi5-deploy/hailort-pcie-driver_*.deb" >/dev/null; then
+        if ! dpkg -s hailort-pcie-driver >/dev/null 2>&1; then
+            echo "[setup.sh] Installing local pi5-deploy/hailort-pcie-driver_*.deb..."
+            sudo apt-get install -y "$PROJECT_ROOT"/pi5-deploy/hailort-pcie-driver_*.deb || true
+        fi
+    fi
+
+    if ! command -v hailortcli >/dev/null 2>&1; then
+        echo "[setup.sh] WARNING: hailortcli still not on PATH after install."
+        echo "           NPU inference won't work, but the v2 GUI will still run in mock mode."
+    fi
 fi
 
 # ---- 3. Python venv ----
@@ -172,12 +188,18 @@ print("  inference.ui.* imports  OK")
 PY
     fi
 
-    # Hailo runtime check
+    # Hailo runtime check (non-fatal — GUI works in mock mode without it)
     if [[ $INSTALL_HAILO = 1 ]]; then
-        if hailortcli fw-control identify 2>/dev/null; then
+        if command -v hailortcli >/dev/null 2>&1 && hailortcli fw-control identify 2>/dev/null >/dev/null; then
             echo "  hailortcli  OK"
         else
-            echo "  WARNING: hailortcli could not talk to NPU. Check /dev/hailo0 permissions, lspci, dmesg."
+            echo "  hailortcli  not active (GUI will run in mock mode)"
+        fi
+        # Python binding probe — also non-fatal
+        if python -c "import hailo_platform" 2>/dev/null; then
+            echo "  hailo_platform Python binding  OK"
+        else
+            echo "  hailo_platform Python binding  NOT FOUND (mock mode only)"
         fi
     fi
 
