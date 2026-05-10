@@ -64,20 +64,39 @@ if [[ $INSTALL_HAILO = 1 ]] && ! lspci 2>/dev/null | grep -qi "hailo"; then
 fi
 
 # ---- 1. System packages ----
+# Pick the newest python3.X / python3.X-venv pair that the apt repo actually ships.
+# Pi OS Bookworm = python3.11; Pi OS Trixie = python3.13. We support whichever
+# is current — pyproject.toml `requires-python = ">=3.11"`.
+PYTHON_BIN=""
+PYTHON_PKGS=()
+for v in 3.13 3.12 3.11; do
+    if apt-cache show "python${v}-venv" 2>/dev/null | grep -q '^Package:'; then
+        PYTHON_BIN="python${v}"
+        PYTHON_PKGS=("python${v}" "python${v}-venv")
+        break
+    fi
+done
+if [[ -z "$PYTHON_BIN" ]]; then
+    # Fall back to the unversioned alias (apt will pick the distro default)
+    PYTHON_BIN="python3"
+    PYTHON_PKGS=("python3" "python3-venv")
+fi
+echo "[setup.sh] Using interpreter: $PYTHON_BIN"
+
 echo "[setup.sh] Installing system packages..."
 APT_PKGS=(
-    python3.11 python3.11-venv python3-pip
+    "${PYTHON_PKGS[@]}" python3-pip
     gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good
     gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
-    libgirepository1.0-dev libcairo2-dev pkg-config
+    libgirepository-1.0-1 libcairo2-dev pkg-config
     v4l-utils
 )
 if [[ $INSTALL_GUI = 1 ]]; then
     # PySide6 needs a few libs the wheel links against
     APT_PKGS+=(
         libxkbcommon0 libxkbcommon-x11-0
-        libgl1 libglib2.0-0
+        libgl1 libglib2.0-0t64
         libfontconfig1 libdbus-1-3
         fonts-noto-cjk
     )
@@ -111,10 +130,10 @@ if [[ $INSTALL_HAILO = 1 ]]; then
 fi
 
 # ---- 3. Python venv ----
-echo "[setup.sh] Creating Python 3.11 virtual environment at $VENV_DIR..."
+echo "[setup.sh] Creating $PYTHON_BIN virtual environment at $VENV_DIR..."
 if [[ ! -d "$VENV_DIR" ]]; then
     # --system-site-packages so the venv can import system python3-hailo-platform
-    python3.11 -m venv --system-site-packages "$VENV_DIR"
+    "$PYTHON_BIN" -m venv --system-site-packages "$VENV_DIR"
 fi
 # shellcheck disable=SC1091
 source "$VENV_DIR/bin/activate"

@@ -7,7 +7,7 @@ name = "neomscope"
 version = "1.0.0"
 description = "Onion cell division detector for science fair — YOLOv11 + Raspberry Pi 5 + AI HAT+ 2 (Hailo-10H)"
 readme = "README.md"
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.11"
 authors = [{ name = "domafordarwin" }]
 license = { text = "MIT" }
 keywords = ["computer-vision", "yolo", "raspberry-pi", "hailo", "edge-ai", "biology"]
