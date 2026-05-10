@@ -91,5 +91,8 @@ pi5-deploy/*.whl
 pi5-deploy/*.zip
 pi5-deploy/*.tar.gz
 
+# Per-developer Pi connection settings (IP/user/keys)
+tools/pi-config.env
+
 # OS
 $RECYCLE.BIN/
